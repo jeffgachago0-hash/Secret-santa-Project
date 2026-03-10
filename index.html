@@ -59,32 +59,11 @@
             <h1 class="text-4xl md:text-5xl font-bold text-white mb-2 drop-shadow-md tracking-wide">
                 🎅 Secret Santa
             </h1>
-            <p class="text-red-200 text-lg">Family Santa Generator 🎁</p>
+            <p class="text-red-200 text-lg">Family Exchange Generator 🎁</p>
         </header>
 
-        <!-- Admin Login Phase -->
-        <div id="admin-login-phase" class="glass-panel rounded-2xl shadow-2xl p-6 md:p-8 transition-all duration-500">
-            <h2 class="text-2xl font-bold text-gray-800 text-center mb-2">Admin Access</h2>
-            <p class="text-gray-600 text-center mb-6">Only the admin can add names. Enter PIN to unlock.</p>
-            
-            <!-- Error Message Toast for Login -->
-            <div id="login-error-message" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm">
-                <p class="font-bold">Oops!</p>
-                <p>Incorrect PIN.</p>
-            </div>
-
-            <div class="flex gap-2 mb-4">
-                <input type="password" id="admin-pin-input" placeholder="Enter PIN..." 
-                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-festive-red focus:border-transparent transition-shadow text-lg">
-                <button id="admin-login-btn" class="bg-festive-red hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow transition-colors flex items-center justify-center">
-                    Unlock
-                </button>
-            </div>
-            <p class="text-sm text-gray-500 text-center">Default PIN is <strong>1234</strong></p>
-        </div>
-
         <!-- Main Card (Setup Phase) -->
-        <div id="setup-phase" class="hidden glass-panel rounded-2xl shadow-2xl p-6 md:p-8 transition-all duration-500">
+        <div id="setup-phase" class="glass-panel rounded-2xl shadow-2xl p-6 md:p-8 transition-all duration-500">
             
             <!-- Error Message Toast -->
             <div id="error-message" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm">
@@ -123,39 +102,16 @@
         <div id="results-phase" class="hidden glass-panel rounded-2xl shadow-2xl p-6 md:p-8 transition-all duration-500">
             <div class="text-center mb-6">
                 <h2 class="text-2xl font-bold text-festive-green mb-2">The Magic is Done! ✨</h2>
-                <p class="text-gray-600">Type your name below to securely reveal who you are buying a gift for.</p>
+                <p class="text-gray-600">Pass the device around. Click your name to privately see who you are buying a gift for.</p>
             </div>
 
-            <!-- Admin Share Box (Only visible to admin who generated it) -->
-            <div id="admin-share-box" class="hidden mb-6 p-4 bg-green-50 rounded-xl border border-green-200 shadow-sm">
-                <p class="text-sm font-bold text-green-800 mb-2">🎉 Pairings Generated! Share this link with your family:</p>
-                <div class="flex gap-2">
-                    <input type="text" id="share-link-input" readonly class="flex-1 px-3 py-2 border border-green-300 rounded focus:outline-none text-sm text-gray-600 bg-white">
-                    <button id="copy-link-btn" class="bg-festive-green hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors text-sm whitespace-nowrap">
-                        Copy Link
-                    </button>
-                </div>
+            <div id="cards-container" class="grid grid-cols-1 gap-3 mb-6">
+                <!-- Participant cards injected here -->
             </div>
 
-            <div id="search-error-message" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm">
-                <p class="font-bold">Not Found</p>
-                <p>We couldn't find that name. Make sure it's spelled correctly!</p>
-            </div>
-
-            <div class="mb-6">
-                <input type="text" id="search-name-input" placeholder="Enter your name..." 
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-festive-red focus:border-transparent transition-shadow text-lg mb-3">
-                <button id="find-match-btn" class="w-full bg-festive-green hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-md transition-colors text-lg">
-                    Find My Match 🎁
-                </button>
-            </div>
-
-            <!-- Admin Controls (Hidden for standard participants using a shared link) -->
-            <div id="admin-controls" class="hidden">
-                <button id="reset-btn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-xl transition-colors mt-8">
-                    Admin: Start Over
-                </button>
-            </div>
+            <button id="reset-btn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-xl transition-colors mt-4">
+                Start Over
+            </button>
         </div>
 
     </div>
@@ -164,9 +120,23 @@
     <div id="reveal-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4 backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all">
             
-            <!-- The Big Reveal -->
-            <div id="modal-result" class="p-8 text-center bg-red-50">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Hi, <span id="modal-giver-name" class="text-festive-green"></span>!</h2>
+            <!-- Step 1: Confirmation -->
+            <div id="modal-confirm" class="p-8 text-center">
+                <div class="text-5xl mb-4">👀</div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Are you <span id="modal-giver-name" class="text-festive-red"></span>?</h3>
+                <p class="text-gray-500 mb-8">Make sure no one else is looking at the screen!</p>
+                <div class="flex gap-3">
+                    <button id="cancel-reveal-btn" class="flex-1 px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-lg transition-colors">
+                        Cancel
+                    </button>
+                    <button id="confirm-reveal-btn" class="flex-1 px-4 py-3 bg-festive-green hover:bg-green-700 text-white font-bold rounded-lg transition-colors shadow-md">
+                        Yes, Reveal
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: The Big Reveal -->
+            <div id="modal-result" class="hidden p-8 text-center bg-red-50">
                 <h3 class="text-lg font-bold text-gray-600 mb-2">You are Secret Santa for:</h3>
                 <div class="text-4xl font-extrabold text-festive-red my-6 pb-2 border-b-2 border-red-200 inline-block px-4">
                     🎁 <span id="modal-receiver-name"></span>
@@ -182,17 +152,11 @@
 
     <script>
         // --- State Management ---
-        const ADMIN_PIN = "1234"; // Change this to your preferred PIN
         let participants = [];
         let pairings = [];
         let currentRevealingGiver = null;
 
         // --- DOM Elements ---
-        const adminLoginPhase = document.getElementById('admin-login-phase');
-        const adminPinInput = document.getElementById('admin-pin-input');
-        const adminLoginBtn = document.getElementById('admin-login-btn');
-        const loginErrorMsg = document.getElementById('login-error-message');
-
         const nameInput = document.getElementById('name-input');
         const addBtn = document.getElementById('add-btn');
         const participantList = document.getElementById('participant-list');
@@ -202,16 +166,7 @@
         
         const setupPhase = document.getElementById('setup-phase');
         const resultsPhase = document.getElementById('results-phase');
-        const searchNameInput = document.getElementById('search-name-input');
-        const findMatchBtn = document.getElementById('find-match-btn');
-        const searchErrorMsg = document.getElementById('search-error-message');
-        
-        // Admin share elements
-        const adminShareBox = document.getElementById('admin-share-box');
-        const shareLinkInput = document.getElementById('share-link-input');
-        const copyLinkBtn = document.getElementById('copy-link-btn');
-        const adminControls = document.getElementById('admin-controls');
-
+        const cardsContainer = document.getElementById('cards-container');
         const resetBtn = document.getElementById('reset-btn');
 
         const errorMsg = document.getElementById('error-message');
@@ -219,10 +174,13 @@
 
         // Modal Elements
         const revealModal = document.getElementById('reveal-modal');
+        const modalConfirm = document.getElementById('modal-confirm');
         const modalResult = document.getElementById('modal-result');
         const modalGiverName = document.getElementById('modal-giver-name');
         const modalReceiverName = document.getElementById('modal-receiver-name');
         
+        const cancelRevealBtn = document.getElementById('cancel-reveal-btn');
+        const confirmRevealBtn = document.getElementById('confirm-reveal-btn');
         const doneRevealBtn = document.getElementById('done-reveal-btn');
 
         // --- Functions ---
@@ -323,129 +281,74 @@
                 viewed: false
             }));
 
-            // Generate Shareable Link!
-            // We encode the pairings into the URL so it can be shared via text/email without a database
-            const encodedData = btoa(encodeURIComponent(JSON.stringify(pairings)));
-            
-            // Rebuilds the URL based on wherever it is hosted (e.g., github pages)
-            const baseUrl = window.location.origin + window.location.pathname; 
-            const shareUrl = baseUrl + '?data=' + encodedData;
-            shareLinkInput.value = shareUrl;
-
-            // Show admin controls
-            adminShareBox.classList.remove('hidden');
-            adminControls.classList.remove('hidden');
-
             // Transition UI
             setupPhase.classList.add('hidden');
             resultsPhase.classList.remove('hidden');
-            searchNameInput.value = ''; // clear search field
+            renderResultCards();
         }
 
-        // Match Finding Logic
-        function findMyMatch() {
-            const searchName = searchNameInput.value.trim().toLowerCase();
-            
-            if (!searchName) return;
-
-            // Find the person in the pairings list (case-insensitive)
-            const myPairing = pairings.find(p => p.giver.toLowerCase() === searchName);
-
-            if (myPairing) {
-                // Name found! Show their match
-                searchErrorMsg.classList.add('hidden');
-                openRevealModal(myPairing.giver, myPairing.receiver);
-                myPairing.viewed = true;
-            } else {
-                // Name not found
-                searchErrorMsg.classList.remove('hidden');
-                setTimeout(() => searchErrorMsg.classList.add('hidden'), 4000);
-            }
+        function renderResultCards() {
+            cardsContainer.innerHTML = '';
+            pairings.forEach((pair, index) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-6 py-4 rounded-xl border-2 transition-all flex justify-between items-center shadow-sm 
+                    ${pair.viewed 
+                        ? 'bg-gray-100 border-gray-200 text-gray-400' 
+                        : 'bg-white border-festive-green hover:bg-green-50 text-gray-800'}`;
+                
+                btn.innerHTML = `
+                    <span class="text-xl font-bold">${pair.giver}</span>
+                    <span class="text-sm font-semibold px-3 py-1 rounded-full ${pair.viewed ? 'bg-gray-200' : 'bg-festive-green text-white'}">
+                        ${pair.viewed ? '✓ Viewed' : 'Click to Reveal'}
+                    </span>
+                `;
+                
+                btn.onclick = () => openRevealModal(pair.giver);
+                cardsContainer.appendChild(btn);
+            });
         }
 
         // Modal Logic
-        function openRevealModal(giverName, receiverName) {
+        function openRevealModal(giverName) {
+            currentRevealingGiver = giverName;
             modalGiverName.textContent = giverName;
-            modalReceiverName.textContent = receiverName;
             
+            // Reset modal states
+            modalConfirm.classList.remove('hidden');
+            modalResult.classList.add('hidden');
             revealModal.classList.remove('hidden');
         }
 
         function closeRevealModal() {
             revealModal.classList.add('hidden');
-            searchNameInput.value = ''; // Reset input for the next person
+            currentRevealingGiver = null;
+        }
+
+        function showMatch() {
+            const pair = pairings.find(p => p.giver === currentRevealingGiver);
+            modalReceiverName.textContent = pair.receiver;
+            
+            modalConfirm.classList.add('hidden');
+            modalResult.classList.remove('hidden');
+            
+            // Mark as viewed
+            pair.viewed = true;
+        }
+
+        function finishReveal() {
+            closeRevealModal();
+            renderResultCards(); // Re-render to update the "Viewed" status
         }
 
         function resetApp() {
             participants = [];
             pairings = [];
-            
-            // Remove the ?data= parameter from the URL if it exists to give us a clean slate
-            // Wrapped in a try-catch to prevent a SecurityError when running in sandboxed previews
-            try {
-                window.history.pushState({}, document.title, window.location.pathname);
-            } catch (err) {
-                console.warn("Could not modify history state in this environment. Continuing reset...", err);
-            }
-
-            adminLoginPhase.classList.remove('hidden');
-            setupPhase.classList.add('hidden');
+            setupPhase.classList.remove('hidden');
             resultsPhase.classList.add('hidden');
-            adminShareBox.classList.add('hidden');
-            adminControls.classList.add('hidden');
             updateUI();
         }
 
-        // Initialize App based on URL
-        function checkUrlForData() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const dataParam = urlParams.get('data');
-
-            if (dataParam) {
-                try {
-                    // We are a participant loading a shared link!
-                    pairings = JSON.parse(decodeURIComponent(atob(dataParam)));
-                    
-                    // Hide admin login, show results directly
-                    adminLoginPhase.classList.add('hidden');
-                    resultsPhase.classList.remove('hidden');
-                    
-                    // Hide admin-specific controls so they can't restart the app or see the link
-                    adminShareBox.classList.add('hidden');
-                    adminControls.classList.add('hidden');
-                } catch (e) {
-                    console.error("Invalid sharing link", e);
-                    // Fallback to normal admin load if link is broken/corrupted
-                    updateUI();
-                }
-            } else {
-                // Normal admin load
-                updateUI();
-            }
-        }
-
         // --- Event Listeners ---
-        
-        // Admin Login Listeners
-        adminLoginBtn.addEventListener('click', () => {
-            if (adminPinInput.value === ADMIN_PIN) {
-                adminLoginPhase.classList.add('hidden');
-                setupPhase.classList.remove('hidden');
-                adminPinInput.value = '';
-                loginErrorMsg.classList.add('hidden');
-            } else {
-                loginErrorMsg.classList.remove('hidden');
-                setTimeout(() => loginErrorMsg.classList.add('hidden'), 4000);
-            }
-        });
-
-        adminPinInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                adminLoginBtn.click();
-            }
-        });
-
         addBtn.addEventListener('click', addParticipant);
         
         // Allow pressing Enter to add name
@@ -459,14 +362,6 @@
         generateBtn.addEventListener('click', generateSecretSanta);
         resetBtn.addEventListener('click', resetApp);
 
-        findMatchBtn.addEventListener('click', findMyMatch);
-        
-        // Allow pressing Enter to search name
-        searchNameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                findMyMatch();
-            }
-        });
-
-        doneRevealBtn.addEventListener('click', closeRevealModal);
+        cancelRevealBtn.addEventListener('click', closeRevealModal);
+        confirmRevealBtn.addEventListener('click', showMatch);
+        doneRevealBtn.addEventListener('click', finishReveal);
