@@ -7,7 +7,7 @@
     <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {theme: jekyll-theme-minimal
+        tailwind.config = {
             theme: {
                 extend: {
                     colors: {
@@ -151,6 +151,8 @@
     </div>
 
     <script>
+        console.log("Secret Santa App initialized successfully.");
+
         // --- State Management ---
         let participants = [];
         let pairings = [];
@@ -186,6 +188,7 @@
         // --- Functions ---
 
         function showError(message) {
+            console.warn("Error shown to user:", message);
             errorText.textContent = message;
             errorMsg.classList.remove('hidden');
             setTimeout(() => {
@@ -206,12 +209,14 @@
             }
 
             participants.push(name);
+            console.log("Added participant:", name);
             nameInput.value = '';
             nameInput.focus();
             updateUI();
         }
 
         function removeParticipant(index) {
+            console.log("Removed participant:", participants[index]);
             participants.splice(index, 1);
             updateUI();
         }
@@ -253,6 +258,7 @@
 
         // The core algorithm to assign Secret Santas
         function generateSecretSanta() {
+            console.log("Generating pairings...");
             let receivers = [...participants];
             let isValid = false;
 
@@ -280,6 +286,8 @@
                 receiver: receivers[index],
                 viewed: false
             }));
+            
+            console.log("Pairings generated successfully!");
 
             // Transition UI
             setupPhase.classList.add('hidden');
@@ -341,6 +349,7 @@
         }
 
         function resetApp() {
+            console.log("Resetting app...");
             participants = [];
             pairings = [];
             setupPhase.classList.remove('hidden');
@@ -364,5 +373,3 @@
 
         cancelRevealBtn.addEventListener('click', closeRevealModal);
         confirmRevealBtn.addEventListener('click', showMatch);
-        doneRevealBtn.addEventListener('click', finishReveal);
-
