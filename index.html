@@ -93,7 +93,7 @@
                 </ul>
             </div>
 
-            <button id="generate-btn" disabled class="w-full bg-festive-red hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg transition-colors text-lg flex justify-center items-center gap-2">
+            <button id="generate-btn" disabled class="w-full bg-festive-red hover:bg-red-700 disabled:bg-red-300 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg transition-colors">
                 🎄 Generate Pairings
             </button>
         </div>
@@ -146,7 +146,6 @@
                     Hide & Close
                 </button>
             </div>
-            
         </div>
     </div>
 
@@ -185,8 +184,7 @@
         const confirmRevealBtn = document.getElementById('confirm-reveal-btn');
         const doneRevealBtn = document.getElementById('done-reveal-btn');
 
-        // --- Functions ---
-
+        // --- Helper functions ---
         function showError(message) {
             console.warn("Error shown to user:", message);
             errorText.textContent = message;
@@ -203,7 +201,8 @@
                 showError("Please enter a name.");
                 return;
             }
-            if (participants.map(p => p.toLowerCase()).includes(name.toLowerCase())) {
+
+            if (participants.some(p => p.toLowerCase() === name.toLowerCase())) {
                 showError("This name is already on the list!");
                 return;
             }
@@ -222,7 +221,6 @@
         }
 
         function updateUI() {
-            // Update List
             participantList.innerHTML = '';
             participantCount.textContent = participants.length;
 
@@ -238,9 +236,9 @@
                         <span class="font-medium text-gray-800 text-lg flex items-center gap-2">
                             <span class="text-festive-red text-sm">👤</span> ${name}
                         </span>
-                        <button onclick="removeParticipant(${index})" class="text-gray-400 hover:text-red-600 transition-colors p-1" title="Remove">
+                        <button type="button" onclick="removeParticipant(${index})" class="text-gray-400 hover:text-red-600 transition-colors p-1" title="Remove">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                             </svg>
                         </button>
                     `;
@@ -248,48 +246,47 @@
                 });
             }
 
-            // Update Generate Button (Need at least 3 people for a fun secret santa)
-            if (participants.length >= 3) {
-                generateBtn.disabled = false;
-            } else {
-                generateBtn.disabled = true;
-            }
+            generateBtn.disabled = participants.length < 3;
         }
 
-        // The core algorithm to assign Secret Santas
+        function shuffleArray(arr) {
+            const copy = [...arr];
+            for (let i = copy.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [copy[i], copy[j]] = [copy[j], copy[i]];
+            }
+            return copy;
+        }
+
         function generateSecretSanta() {
             console.log("Generating pairings...");
-            let receivers = [...participants];
-            let isValid = false;
+            const giverNames = [...participants];
+            let shuffledReceivers = [];
+            let attempts = 0;
+            const maxAttempts = 5000;
 
-            // Keep shuffling until no one is assigned themselves
-            while (!isValid) {
-                // Fisher-Yates shuffle
-                for (let i = receivers.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [receivers[i], receivers[j]] = [receivers[j], receivers[i]];
-                }
+            do {
+                shuffledReceivers = shuffleArray(giverNames);
+                attempts += 1;
 
-                // Check for self-assignment
-                isValid = true;
-                for (let i = 0; i < participants.length; i++) {
-                    if (participants[i] === receivers[i]) {
-                        isValid = false;
-                        break;
-                    }
+                const hasSelfMatch = giverNames.some((giver, index) => giver === shuffledReceivers[index]);
+                if (!hasSelfMatch) {
+                    break;
                 }
+            } while (attempts < maxAttempts);
+
+            if (attempts >= maxAttempts) {
+                showError("Unable to generate a valid pairing. Please try again.");
+                return;
             }
 
-            // Build the pairings state object
-            pairings = participants.map((giver, index) => ({
-                giver: giver,
-                receiver: receivers[index],
+            pairings = giverNames.map((giver, index) => ({
+                giver,
+                receiver: shuffledReceivers[index],
                 viewed: false
             }));
-            
-            console.log("Pairings generated successfully!");
 
-            // Transition UI
+            console.log("Pairings generated successfully!");
             setupPhase.classList.add('hidden');
             resultsPhase.classList.remove('hidden');
             renderResultCards();
@@ -297,12 +294,14 @@
 
         function renderResultCards() {
             cardsContainer.innerHTML = '';
-            pairings.forEach((pair, index) => {
+            pairings.forEach((pair) => {
                 const btn = document.createElement('button');
-                btn.className = `w-full text-left px-6 py-4 rounded-xl border-2 transition-all flex justify-between items-center shadow-sm 
-                    ${pair.viewed 
-                        ? 'bg-gray-100 border-gray-200 text-gray-400' 
-                        : 'bg-white border-festive-green hover:bg-green-50 text-gray-800'}`;
+                btn.type = 'button';
+                btn.className = `w-full text-left px-6 py-4 rounded-xl border-2 transition-all flex justify-between items-center shadow-sm ${
+                    pair.viewed
+                        ? 'bg-gray-100 border-gray-200 text-gray-400'
+                        : 'bg-white border-festive-green hover:bg-green-50 text-gray-800'
+                }`;
                 
                 btn.innerHTML = `
                     <span class="text-xl font-bold">${pair.giver}</span>
@@ -316,12 +315,10 @@
             });
         }
 
-        // Modal Logic
         function openRevealModal(giverName) {
             currentRevealingGiver = giverName;
             modalGiverName.textContent = giverName;
-            
-            // Reset modal states
+
             modalConfirm.classList.remove('hidden');
             modalResult.classList.add('hidden');
             revealModal.classList.remove('hidden');
@@ -330,38 +327,46 @@
         function closeRevealModal() {
             revealModal.classList.add('hidden');
             currentRevealingGiver = null;
+            modalConfirm.classList.remove('hidden');
+            modalResult.classList.add('hidden');
         }
 
         function showMatch() {
             const pair = pairings.find(p => p.giver === currentRevealingGiver);
+            if (!pair) {
+                closeRevealModal();
+                return;
+            }
+
             modalReceiverName.textContent = pair.receiver;
-            
             modalConfirm.classList.add('hidden');
             modalResult.classList.remove('hidden');
-            
-            // Mark as viewed
             pair.viewed = true;
+            renderResultCards();
         }
 
         function finishReveal() {
             closeRevealModal();
-            renderResultCards(); // Re-render to update the "Viewed" status
+            renderResultCards();
         }
 
         function resetApp() {
             console.log("Resetting app...");
             participants = [];
             pairings = [];
+            currentRevealingGiver = null;
             setupPhase.classList.remove('hidden');
             resultsPhase.classList.add('hidden');
+            revealModal.classList.add('hidden');
+            modalConfirm.classList.remove('hidden');
+            modalResult.classList.add('hidden');
             updateUI();
         }
 
         // --- Event Listeners ---
         addBtn.addEventListener('click', addParticipant);
-        
-        // Allow pressing Enter to add name
-        nameInput.addEventListener('keypress', (e) => {
+
+        nameInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 addParticipant();
@@ -370,6 +375,17 @@
 
         generateBtn.addEventListener('click', generateSecretSanta);
         resetBtn.addEventListener('click', resetApp);
-
         cancelRevealBtn.addEventListener('click', closeRevealModal);
         confirmRevealBtn.addEventListener('click', showMatch);
+        doneRevealBtn.addEventListener('click', finishReveal);
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !revealModal.classList.contains('hidden')) {
+                closeRevealModal();
+            }
+        });
+
+        updateUI();
+    </script>
+</body>
+</html>
